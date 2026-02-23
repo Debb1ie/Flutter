@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocra — Clone Any Voice</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0eeea;
+  --fg: #0d0d0d;
+  --muted: #888;
+  --border: #d4d1cc;
+  --card: #fafaf8;
+  --card2: #ffffff;
+  --tag: #e8e5e0;
+  --invert-bg: #0d0d0d;
+  --invert-fg: #f0eeea;
+}
+[data-theme="dark"] {
+  --bg: #0d0d0d;
+  --fg: #f0eeea;
+  --muted: #666;
+  --border: #222;
+  --card: #111;
+  --card2: #161616;
+  --tag: #1a1a1a;
+  --invert-bg: #f0eeea;
+  --invert-fg: #0d0d0d;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Manrope', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  transition: background 0.35s, color 0.35s;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CURSOR */
+#cur { position: fixed; width: 8px; height: 8px; background: var(--fg); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: background 0.35s; }
+#curR { position: fixed; width: 30px; height: 30px; border: 1px solid var(--fg); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); opacity: 0.4; transition: border-color 0.35s, transform 0.08s linear, opacity 0.3s; }
+body:hover #cur { opacity: 1; }
+.cur-grow #cur { transform: translate(-50%,-50%) scale(2.5); opacity: 0.5; }
+.cur-grow #curR { transform: translate(-50%,-50%) scale(1.6); opacity: 0.2; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 3rem;
+  height: 60px;
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.35s, border-color 0.35s;
+}
+.nav-logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg);
+  text-decoration: none;
+  font-weight: 700;
+}
+.nav-links { display: flex; align-items: center; gap: 0; list-style: none; }
+.nav-links a {
+  display: block;
+  padding: 0 1.2rem;
+  height: 60px;
+  line-height: 60px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  border-left: 1px solid var(--border);
+}
+.nav-links a:hover, .nav-links a.active { color: var(--fg); }
+.nav-links a.active { font-weight: 700; }
+.nav-right { display: flex; align-items: center; gap: 1rem; border-left: 1px solid var(--border); padding-left: 1.2rem; height: 60px; }
+.theme-btn {
+  width: 40px; height: 22px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  cursor: none;
+  position: relative;
+  transition: border-color 0.3s;
+}
+.theme-btn::after {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  background: var(--fg);
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: transform 0.3s, background 0.35s;
+}
+[data-theme="dark"] .theme-btn::after { transform: translateX(18px); }
+.sign-in {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.sign-in:hover { color: var(--fg); }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  padding: 120px 3rem 5rem;
+  display: flex; flex-direction: column; justify-content: center;
+  max-width: 1100px; margin: 0 auto;
+  position: relative;
+}
+.hero-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2rem;
+  opacity: 0; animation: up 0.6s 0.1s forwards;
+}
+.hero h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(5rem, 13vw, 13rem);
+  line-height: 0.88;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  opacity: 0; animation: up 0.7s 0.2s forwards;
+}
+.hero h1 span { display: block; }
+.hero h1 span.indent { padding-left: 0.15em; }
+.hero-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.82rem;
+  line-height: 1.8;
+  color: var(--muted);
+  max-width: 400px;
+  margin-top: 2.5rem;
+  opacity: 0; animation: up 0.7s 0.35s forwards;
+}
+.hero-cta {
+  display: flex; gap: 0.75rem; margin-top: 2.5rem;
+  opacity: 0; animation: up 0.7s 0.45s forwards;
+  flex-wrap: wrap;
+}
+.btn-solid {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.5rem;
+  background: var(--fg);
+  color: var(--bg);
+  border: 1px solid var(--fg);
+  cursor: none;
+  text-decoration: none;
+  display: inline-block;
+  transition: opacity 0.2s, background 0.35s, color 0.35s, border-color 0.35s;
+}
+.btn-solid:hover { opacity: 0.75; }
+.btn-ghost {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.5rem;
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  cursor: none;
+  text-decoration: none;
+  display: inline-block;
+  transition: border-color 0.2s, background 0.35s, color 0.35s;
+}
+.btn-ghost:hover { border-color: var(--fg); }
+.hero-scroll {
+  position: absolute; bottom: 2rem; left: 3rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex; align-items: center; gap: 0.75rem;
+  opacity: 0; animation: up 0.7s 0.6s forwards;
+}
+.hero-scroll::before { content: ''; display: block; width: 32px; height: 1px; background: var(--muted); }
+
+@keyframes up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* TICKER */
+.ticker-wrap {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  padding: 0.9rem 0;
+  background: var(--card);
+  transition: background 0.35s, border-color 0.35s;
+}
+.ticker-track {
+  display: flex; gap: 4rem; width: max-content;
+  animation: tick 30s linear infinite;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ticker-track:hover { animation-play-state: paused; }
+@keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.tick-item { white-space: nowrap; display: flex; align-items: center; gap: 1.5rem; }
+.tick-sep { color: var(--border); }
+
+/* VOICE CARDS SECTION */
+#voices { padding: 5rem 3rem; max-width: 1200px; margin: 0 auto; }
+.section-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;
+}
+.section-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+.section-head h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 5vw, 5rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+  color: var(--fg);
+}
+
+/* VOICE GRID */
+.voice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+@media (max-width: 700px) { .voice-grid { grid-template-columns: 1fr; } }
+
+.voice-card {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  transition: background 0.35s, border-color 0.35s, transform 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.voice-card:hover { transform: translateY(-3px); }
+.vc-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 0.4rem;
+}
+.vc-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.vc-lang {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.vc-desc {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+.vc-img-wrap {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 1.25rem;
+  background: var(--tag);
+}
+.vc-img-wrap img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.1);
+  transition: filter 0.3s;
+}
+.voice-card:hover .vc-img-wrap img { filter: grayscale(0.7) contrast(1.1); }
+
+/* halftone overlay */
+.vc-img-wrap::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, var(--fg) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+/* placeholder for cards without real images */
+.vc-placeholder {
+  width: 100%; height: 200px;
+  background: var(--tag);
+  margin-bottom: 1.25rem;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.vc-placeholder-inner {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 5rem;
+  color: var(--border);
+  letter-spacing: 0.05em;
+  user-select: none;
+  opacity: 0.5;
+}
+
+.vc-controls {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;
+}
+.toggle-group { display: flex; }
+.tog-btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: none;
+  transition: background 0.2s, color 0.2s, border-color 0.35s;
+}
+.tog-btn.active {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+.tog-btn:first-child { border-right: none; }
+.download-btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: none;
+  transition: border-color 0.2s, color 0.2s, background 0.35s;
+}
+.download-btn:hover { border-color: var(--fg); color: var(--fg); }
+
+.vc-player { display: flex; align-items: center; gap: 0.75rem; }
+.play-btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  cursor: none;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s, border-color 0.35s;
+}
+.play-btn:hover { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.play-btn.playing { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+.waveform-bar {
+  flex: 1;
+  height: 40px;
+  position: relative;
+  cursor: none;
+  overflow: hidden;
+}
+.wf-svg { width: 100%; height: 100%; }
+.wf-progress {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  background: color-mix(in srgb, var(--fg) 12%, transparent);
+  transition: width 0.1s linear;
+  pointer-events: none;
+}
+.vc-time {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  min-width: 30px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* FEATURES SECTIONS */
+#clone, #generate, #design { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+
+.feat-block {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+  align-items: center; margin-bottom: 6rem;
+}
+.feat-block.reverse { direction: rtl; }
+.feat-block.reverse > * { direction: ltr; }
+@media (max-width: 800px) {
+  .feat-block { grid-template-columns: 1fr; gap: 2rem; }
+  .feat-block.reverse { direction: ltr; }
+}
+
+.feat-text .feat-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg);
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+.feat-text p {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.85;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+.feat-checklist { list-style: none; margin-bottom: 2rem; }
+.feat-checklist li {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.6;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  transition: border-color 0.35s;
+}
+.feat-checklist li::before {
+  content: '□';
+  color: var(--border);
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  margin-top: 0.05em;
+}
+.open-link {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg);
+  text-decoration: none;
+  border-bottom: 1px solid var(--fg);
+  padding-bottom: 2px;
+  transition: opacity 0.2s;
+}
+.open-link:hover { opacity: 0.6; }
+.open-link::after { content: ' →'; }
+
+/* Mock UI panels */
+.mock-panel {
+  background: var(--invert-bg);
+  color: var(--invert-fg);
+  padding: 1.5rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  line-height: 1.7;
+  border: 1px solid var(--border);
+  transition: background 0.35s, color 0.35s, border-color 0.35s;
+}
+.mock-panel-title {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+}
+.mock-field { margin-bottom: 1.25rem; }
+.mock-field-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.4;
+  margin-bottom: 0.4rem;
+}
+.mock-field-input {
+  border: 1px solid color-mix(in srgb, var(--invert-fg) 20%, transparent);
+  padding: 0.5rem 0.75rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--invert-fg);
+  background: transparent;
+  width: 100%;
+  outline: none;
+}
+.mock-select {
+  border: 1px solid color-mix(in srgb, var(--invert-fg) 20%, transparent);
+  padding: 0.5rem 0.75rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--invert-fg);
+  background: var(--invert-bg);
+  width: 100%;
+  outline: none;
+  cursor: none;
+  appearance: none;
+  transition: background 0.35s, color 0.35s;
+}
+.mock-textarea {
+  border: 1px solid color-mix(in srgb, var(--invert-fg) 20%, transparent);
+  padding: 0.5rem 0.75rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: color-mix(in srgb, var(--invert-fg) 40%, transparent);
+  background: transparent;
+  width: 100%;
+  min-height: 80px;
+  resize: none;
+  outline: none;
+  line-height: 1.6;
+}
+.mock-footer-bar {
+  display: flex; justify-content: space-between;
+  font-size: 0.62rem; opacity: 0.4;
+  margin-bottom: 1rem;
+}
+.mock-btn-full {
+  width: 100%;
+  padding: 0.6rem;
+  background: var(--invert-fg);
+  color: var(--invert-bg);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: none;
+  cursor: none;
+  transition: opacity 0.2s, background 0.35s, color 0.35s;
+}
+.mock-btn-full:hover { opacity: 0.8; }
+
+/* PRICING */
+#pricing { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+#pricing .section-label { margin-bottom: 0.5rem; }
+#pricing h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 5vw, 5rem);
+  line-height: 0.9;
+  margin-bottom: 0.75rem;
+}
+#pricing > p {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 3rem;
+  line-height: 1.7;
+}
+
+.pricing-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 3rem; }
+@media (max-width: 700px) { .pricing-cards { grid-template-columns: 1fr; } }
+
+.price-card {
+  border: 1px solid var(--border);
+  padding: 2rem;
+  background: var(--card2);
+  position: relative;
+  transition: background 0.35s, border-color 0.35s;
+}
+.price-card.featured { border-color: var(--fg); }
+.most-picked {
+  position: absolute; top: -1px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 0.2rem 0.75rem;
+  transition: background 0.35s, color 0.35s;
+}
+.pc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+.pc-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg);
+  font-weight: 700;
+}
+.pc-choose {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: none;
+  transition: border-color 0.2s, color 0.2s, background 0.35s;
+}
+.price-card.featured .pc-choose { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.pc-amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3.5rem;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--fg);
+}
+.pc-amount sup { font-size: 1.5rem; vertical-align: super; }
+.pc-period {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-left: 0.25rem;
+}
+.pc-desc {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+.pc-features { list-style: none; }
+.pc-features li {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 0.75rem; align-items: flex-start;
+  transition: border-color 0.35s;
+}
+.pc-features li::before { content: '□'; color: var(--border); flex-shrink: 0; }
+
+/* CREDIT RATES */
+.credit-rates { margin-bottom: 3rem; }
+.cr-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.cr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 700px) { .cr-grid { grid-template-columns: 1fr; } }
+.cr-card {
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  background: var(--card2);
+  transition: background 0.35s, border-color 0.35s;
+}
+.cr-card-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+.cr-amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--fg);
+  margin-bottom: 0.5rem;
+}
+.cr-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* FAQ */
+.faq-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.faq-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 700px) { .faq-grid { grid-template-columns: 1fr; } }
+.faq-card {
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  background: var(--card2);
+  transition: background 0.35s, border-color 0.35s;
+}
+.faq-q {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+.faq-a {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* DEMO SECTION */
+#demo { max-width: 900px; margin: 0 auto; padding: 5rem 3rem; }
+#demo h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem, 5vw, 5rem); line-height: 0.9; margin-bottom: 1rem; }
+#demo > p { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--muted); margin-bottom: 2.5rem; line-height: 1.7; }
+
+.demo-box {
+  background: var(--invert-bg);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  transition: background 0.35s;
+}
+.demo-box-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--invert-fg);
+  opacity: 0.4;
+  margin-bottom: 1.5rem;
+}
+.demo-field { margin-bottom: 1.25rem; }
+.demo-field label {
+  display: block;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--invert-fg);
+  opacity: 0.5;
+  margin-bottom: 0.5rem;
+}
+.demo-field select,
+.demo-field textarea,
+.demo-field input[type="file"] {
+  width: 100%;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--invert-fg);
+  background: color-mix(in srgb, var(--invert-fg) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--invert-fg) 20%, transparent);
+  padding: 0.6rem 0.75rem;
+  outline: none;
+  appearance: none;
+  cursor: none;
+  transition: color 0.35s, background 0.35s;
+}
+.demo-field textarea { min-height: 80px; resize: vertical; line-height: 1.6; }
+.demo-footer-meta {
+  display: flex; justify-content: space-between;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--invert-fg);
+  opacity: 0.3;
+  margin-bottom: 1rem;
+}
+.demo-generate-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--invert-fg);
+  color: var(--invert-bg);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  cursor: none;
+  transition: opacity 0.2s, background 0.35s, color 0.35s;
+}
+.demo-generate-btn:hover { opacity: 0.8; }
+.demo-output {
+  margin-top: 1.5rem;
+  background: color-mix(in srgb, var(--invert-fg) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--invert-fg) 15%, transparent);
+  padding: 1.25rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--invert-fg);
+  line-height: 1.7;
+  min-height: 60px;
+  display: none;
+}
+.demo-output.show { display: block; }
+
+/* ABOUT */
+#about { max-width: 700px; margin: 0 auto; padding: 5rem 3rem; text-align: center; }
+#about h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem, 5vw, 5rem); line-height: 0.9; margin-bottom: 1.5rem; }
+#about p { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--muted); line-height: 1.85; margin-bottom: 1rem; }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem 3rem;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1rem;
+  transition: border-color 0.35s;
+}
+.footer-logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--fg);
+  text-decoration: none;
+}
+.footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+.footer-links a {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--fg); }
+.footer-copy { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--border); letter-spacing: 0.05em; }
+
+/* Reveal */
+.rev { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.rev.on { opacity: 1; transform: none; }
+.rev-d1 { transition-delay: 0.1s; }
+.rev-d2 { transition-delay: 0.2s; }
+.rev-d3 { transition-delay: 0.3s; }
+
+/* MOBILE NAV */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: none;
+  padding: 4px;
+  margin-left: 0.75rem;
+}
+.hamburger span {
+  display: block;
+  width: 20px;
+  height: 1.5px;
+  background: var(--fg);
+  transition: transform 0.3s, opacity 0.3s, background 0.35s;
+  transform-origin: center;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+.mobile-nav {
+  display: none;
+  position: fixed;
+  top: 60px; left: 0; right: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  z-index: 199;
+  padding: 1.5rem;
+  flex-direction: column;
+  gap: 0;
+  transition: background 0.35s, border-color 0.35s;
+}
+.mobile-nav.open { display: flex; }
+.mobile-nav a {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+  transition: color 0.2s, border-color 0.35s;
+  display: block;
+}
+.mobile-nav a:last-child { border-bottom: none; }
+.mobile-nav a.active, .mobile-nav a:hover { color: var(--fg); }
+
+@media (max-width: 768px) {
+  nav { padding: 0 1.5rem; }
+  .nav-links { display: none !important; }
+  .hamburger { display: flex; }
+  .hero { padding: 100px 1.5rem 4rem; }
+  #voices, #clone, #generate, #design, #pricing, #demo, #about { padding: 4rem 1.5rem; }
+  footer { padding: 2rem 1.5rem; flex-direction: column; align-items: flex-start; }
+  .feat-block { grid-template-columns: 1fr; }
+  .cr-grid, .faq-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="curR"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Vocra</a>
+  <ul class="nav-links">
+    <li><a href="#demo" id="demoLink">Demo</a></li>
+    <li><a href="#voices" id="featLink" class="active">Features</a></li>
+    <li><a href="#pricing" id="pricLink">Pricing</a></li>
+    <li><a href="#about" id="aboutLink">About</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="theme-btn" id="themeBtn" aria-label="Toggle dark mode"></button>
+    <a href="#demo" class="sign-in">Sign In</a>
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE DROPDOWN NAV -->
+<div class="mobile-nav" id="mobileNav">
+  <a href="#demo" class="mob-link">Demo</a>
+  <a href="#voices" class="mob-link">Features</a>
+  <a href="#pricing" class="mob-link">Pricing</a>
+  <a href="#about" class="mob-link">About</a>
+  <a href="#demo" class="mob-link">Sign In</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Voice cloning · Speech synthesis · AI audio</div>
+  <h1>
+    <span>Clone</span>
+    <span class="indent">Any</span>
+    <span>Voice.</span>
+  </h1>
+  <p class="hero-sub">Upload a reference clip. Generate speech in any voice. Design voices from description alone. Vocra makes audio production fast and precise.</p>
+  <div class="hero-cta">
+    <a href="#demo" class="btn-solid">Try the Demo</a>
+    <a href="#voices" class="btn-ghost">Browse Voices</a>
+  </div>
+  <div class="hero-scroll">Scroll to explore</div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="tick-item">Voice Cloning <span class="tick-sep">·</span></span>
+    <span class="tick-item">TTS Generation <span class="tick-sep">·</span></span>
+    <span class="tick-item">10k chars/request <span class="tick-sep">·</span></span>
+    <span class="tick-item">Multilingual <span class="tick-sep">·</span></span>
+    <span class="tick-item">WAV + MP3 Export <span class="tick-sep">·</span></span>
+    <span class="tick-item">Voice Library <span class="tick-sep">·</span></span>
+    <span class="tick-item">Japanese · Chinese · Cantonese <span class="tick-sep">·</span></span>
+    <span class="tick-item">No Upload Required <span class="tick-sep">·</span></span>
+    <span class="tick-item">50 credits / minute <span class="tick-sep">·</span></span>
+    <span class="tick-item">Voice Cloning <span class="tick-sep">·</span></span>
+    <span class="tick-item">TTS Generation <span class="tick-sep">·</span></span>
+    <span class="tick-item">10k chars/request <span class="tick-sep">·</span></span>
+    <span class="tick-item">Multilingual <span class="tick-sep">·</span></span>
+    <span class="tick-item">WAV + MP3 Export <span class="tick-sep">·</span></span>
+    <span class="tick-item">Voice Library <span class="tick-sep">·</span></span>
+    <span class="tick-item">Japanese · Chinese · Cantonese <span class="tick-sep">·</span></span>
+    <span class="tick-item">No Upload Required <span class="tick-sep">·</span></span>
+    <span class="tick-item">50 credits / minute <span class="tick-sep">·</span></span>
+  </div>
+</div>
+
+<!-- VOICES -->
+<section id="voices">
+  <div class="section-head rev">
+    <div>
+      <div class="section-label">Voice Library</div>
+      <h2>Curated.<br>Cloned.<br>Yours.</h2>
+    </div>
+    <a href="#demo" class="btn-ghost" style="align-self: flex-end;">Open Library →</a>
+  </div>
+
+  <div class="voice-grid">
+
+    <!-- GOJO -->
+    <div class="voice-card rev">
+      <div class="vc-top">
+        <div class="vc-name">Gojo</div>
+        <div class="vc-lang">Japanese</div>
+      </div>
+      <div class="vc-desc">Sharp, confident, anime-cinematic.</div>
+      <div class="vc-placeholder">
+        <div class="vc-placeholder-inner">五条</div>
+        <!-- halftone noise pattern -->
+        <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.15" xmlns="http://www.w3.org/2000/svg">
+          <filter id="h1"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+          <rect width="100%" height="100%" filter="url(#h1)" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="vc-controls">
+        <div class="toggle-group">
+          <button class="tog-btn active" onclick="setToggle(this,'original')">Original</button>
+          <button class="tog-btn" onclick="setToggle(this,'clone')">Clone</button>
+        </div>
+        <button class="download-btn" onclick="fakeDownload('gojo')">Download</button>
+      </div>
+      <div class="vc-player">
+        <button class="play-btn" onclick="togglePlay(this,'gojo')">Play</button>
+        <div class="waveform-bar" onclick="seekWave(this)">
+          <svg class="wf-svg" viewBox="0 0 300 40" preserveAspectRatio="none" id="wf-gojo">
+          </svg>
+          <div class="wf-progress" style="width:0%"></div>
+        </div>
+        <span class="vc-time">0:00</span>
+      </div>
+    </div>
+
+    <!-- FRIEREN -->
+    <div class="voice-card rev rev-d1">
+      <div class="vc-top">
+        <div class="vc-name">Frieren</div>
+        <div class="vc-lang">Japanese</div>
+      </div>
+      <div class="vc-desc">Soft-spoken, calm, distant warmth.</div>
+      <div class="vc-placeholder">
+        <div class="vc-placeholder-inner">フリーレン</div>
+        <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.15" xmlns="http://www.w3.org/2000/svg">
+          <filter id="h2"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+          <rect width="100%" height="100%" filter="url(#h2)" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="vc-controls">
+        <div class="toggle-group">
+          <button class="tog-btn active" onclick="setToggle(this,'original')">Original</button>
+          <button class="tog-btn" onclick="setToggle(this,'clone')">Clone</button>
+        </div>
+        <button class="download-btn" onclick="fakeDownload('frieren')">Download</button>
+      </div>
+      <div class="vc-player">
+        <button class="play-btn" onclick="togglePlay(this,'frieren')">Play</button>
+        <div class="waveform-bar" onclick="seekWave(this)">
+          <svg class="wf-svg" viewBox="0 0 300 40" preserveAspectRatio="none" id="wf-frieren"></svg>
+          <div class="wf-progress" style="width:0%"></div>
+        </div>
+        <span class="vc-time">0:00</span>
+      </div>
+    </div>
+
+    <!-- EEAAO -->
+    <div class="voice-card rev rev-d2">
+      <div class="vc-top">
+        <div class="vc-name">Eeaao</div>
+        <div class="vc-lang">Chinese</div>
+      </div>
+      <div class="vc-desc">Grounded, tender, close-mic realism.</div>
+      <div class="vc-placeholder">
+        <div class="vc-placeholder-inner">妈妈</div>
+        <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.15" xmlns="http://www.w3.org/2000/svg">
+          <filter id="h3"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+          <rect width="100%" height="100%" filter="url(#h3)" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="vc-controls">
+        <div class="toggle-group">
+          <button class="tog-btn active" onclick="setToggle(this,'original')">Original</button>
+          <button class="tog-btn" onclick="setToggle(this,'clone')">Clone</button>
+        </div>
+        <button class="download-btn" onclick="fakeDownload('eeaao')">Download</button>
+      </div>
+      <div class="vc-player">
+        <button class="play-btn" onclick="togglePlay(this,'eeaao')">Play</button>
+        <div class="waveform-bar" onclick="seekWave(this)">
+          <svg class="wf-svg" viewBox="0 0 300 40" preserveAspectRatio="none" id="wf-eeaao"></svg>
+          <div class="wf-progress" style="width:0%"></div>
+        </div>
+        <span class="vc-time">0:00</span>
+      </div>
+    </div>
+
+    <!-- CHUNGKING -->
+    <div class="voice-card rev rev-d3">
+      <div class="vc-top">
+        <div class="vc-name">Chungking</div>
+        <div class="vc-lang">Cantonese / Mandarin</div>
+      </div>
+      <div class="vc-desc">Streetlight glow, late-night motion.</div>
+      <div class="vc-placeholder">
+        <div class="vc-placeholder-inner">重慶</div>
+        <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.15" xmlns="http://www.w3.org/2000/svg">
+          <filter id="h4"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+          <rect width="100%" height="100%" filter="url(#h4)" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="vc-controls">
+        <div class="toggle-group">
+          <button class="tog-btn active" onclick="setToggle(this,'original')">Original</button>
+          <button class="tog-btn" onclick="setToggle(this,'clone')">Clone</button>
+        </div>
+        <button class="download-btn" onclick="fakeDownload('chungking')">Download</button>
+      </div>
+      <div class="vc-player">
+        <button class="play-btn" onclick="togglePlay(this,'chungking')">Play</button>
+        <div class="waveform-bar" onclick="seekWave(this)">
+          <svg class="wf-svg" viewBox="0 0 300 40" preserveAspectRatio="none" id="wf-chungking"></svg>
+          <div class="wf-progress" style="width:0%"></div>
+        </div>
+        <span class="vc-time">0:00</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CLONE FEATURE -->
+<section id="clone" style="padding-top:2rem;">
+  <div class="feat-block rev">
+    <div class="feat-text">
+      <div class="feat-title">Clone</div>
+      <p>Upload a voice reference — as short as 10 seconds — and Vocra builds a high-fidelity model. The clone is saved to your voice library and ready to use immediately.</p>
+      <ul class="feat-checklist">
+        <li>Name your voice, upload a reference clip, and submit.</li>
+        <li>Keep clones organized in a single voice library.</li>
+        <li>Use the same voice for short prompts or long-form text.</li>
+      </ul>
+      <a href="#demo" class="open-link">Open Clone</a>
+    </div>
+    <div class="mock-panel">
+      <div class="mock-panel-title">Clone ↑</div>
+      <div class="mock-field">
+        <div class="mock-field-label">Voice Name</div>
+        <input class="mock-field-input" type="text" value="e.g. Archer Valik, Close-hall..." readonly>
+      </div>
+      <div class="mock-field">
+        <div class="mock-field-label">Transcript</div>
+        <textarea class="mock-textarea" readonly>Paste the transcript of the reference audio.</textarea>
+      </div>
+      <div class="mock-field">
+        <div class="mock-field-label">Language</div>
+        <select class="mock-select">
+          <option>Auto</option><option>Japanese</option><option>Chinese</option><option>English</option>
+        </select>
+      </div>
+      <div class="mock-footer-bar"><span>0/10000</span></div>
+      <div style="display:flex;gap:0.5rem;">
+        <button class="mock-btn-full" style="flex:1;background:transparent;color:color-mix(in srgb, var(--invert-fg) 40%, transparent);border:1px solid color-mix(in srgb, var(--invert-fg) 20%, transparent);">Try Example Voice</button>
+        <button class="mock-btn-full" style="flex:1;">Clone Voice</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GENERATE FEATURE -->
+<section id="generate" style="padding-top:0;">
+  <div class="feat-block reverse rev">
+    <div class="feat-text">
+      <div class="feat-title">Generate</div>
+      <p>Pick a voice, paste text, and generate speech with fast iteration. Preview audio quickly and download when it sounds right.</p>
+      <ul class="feat-checklist">
+        <li>Up to 10k characters per request.</li>
+        <li>Preview audio quickly and download when it sounds right.</li>
+        <li>Reuse voices across projects without re-uploading.</li>
+      </ul>
+      <a href="#demo" class="open-link">Open Generate</a>
+    </div>
+    <div class="mock-panel">
+      <div class="mock-panel-title">Generate ↓</div>
+      <div class="mock-field">
+        <div class="mock-field-label">Voice</div>
+        <select class="mock-select"><option>Select a voice</option><option>Gojo</option><option>Frieren</option><option>Eeaao</option><option>Chungking</option></select>
+      </div>
+      <div class="mock-field">
+        <div class="mock-field-label">Language</div>
+        <select class="mock-select"><option>Auto</option><option>Japanese</option><option>Chinese</option><option>English</option></select>
+      </div>
+      <div class="mock-field">
+        <div class="mock-field-label">Text</div>
+        <textarea class="mock-textarea" readonly>Type what you want the voice to say…</textarea>
+      </div>
+      <div class="mock-footer-bar"><span>0/10000</span><span>Max 10,000 characters</span></div>
+      <button class="mock-btn-full">Generate Speech</button>
+    </div>
+  </div>
+</section>
+
+<!-- DESIGN FEATURE -->
+<section id="design" style="padding-top:0;">
+  <div class="feat-block rev">
+    <div class="feat-text">
+      <div class="feat-title">Design</div>
+      <p>Describe a voice in text, generate candidates, then save the best one to your library. No audio upload required — just your imagination.</p>
+      <ul class="feat-checklist">
+        <li>No audio upload required.</li>
+        <li>Generate multiple candidates and compare.</li>
+        <li>Save the best voice directly to your library.</li>
+      </ul>
+      <a href="#demo" class="open-link">Open Design</a>
+    </div>
+    <div class="mock-panel">
+      <div class="mock-panel-title">Design ↑</div>
+      <div class="mock-field">
+        <div class="mock-field-label">Voice Name</div>
+        <input class="mock-field-input" type="text" placeholder="e.g. Warm narrator, late-night host..." readonly>
+      </div>
+      <div class="mock-field">
+        <div class="mock-field-label">Voice Description</div>
+        <textarea class="mock-textarea" readonly>Describe the voice: tone, pacing, timbre, vibe…</textarea>
+      </div>
+      <div class="mock-field">
+        <div class="mock-field-label">Preview Text</div>
+        <input class="mock-field-input" type="text" placeholder="Hello, I'm your new voice." readonly>
+      </div>
+      <div style="display:flex;gap:0.5rem;">
+        <button class="mock-btn-full" style="flex:1;background:transparent;color:color-mix(in srgb, var(--invert-fg) 40%, transparent);border:1px solid color-mix(in srgb, var(--invert-fg) 20%, transparent);">+ Add a Style</button>
+        <button class="mock-btn-full" style="flex:1;">Preview Voice</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section id="demo">
+  <div class="rev">
+    <div class="section-label">Live Demo</div>
+    <h2>Generate<br>Speech Now.</h2>
+    <p>Pick a voice, type your text, and hit generate. The output is simulated for this demo — sign in to use real AI generation.</p>
+  </div>
+  <div class="demo-box rev rev-d1">
+    <div class="demo-box-title">Generate ↓</div>
+    <div class="demo-field">
+      <label>Voice</label>
+      <select id="demoVoice">
+        <option value="">— Select a voice —</option>
+        <option value="gojo">Gojo (Japanese)</option>
+        <option value="frieren">Frieren (Japanese)</option>
+        <option value="eeaao">Eeaao (Chinese)</option>
+        <option value="chungking">Chungking (Cantonese / Mandarin)</option>
+      </select>
+    </div>
+    <div class="demo-field">
+      <label>Language</label>
+      <select id="demoLang">
+        <option>Auto</option><option>Japanese</option><option>Chinese</option><option>Cantonese</option><option>English</option>
+      </select>
+    </div>
+    <div class="demo-field">
+      <label>Text</label>
+      <textarea id="demoText" style="min-height:90px;background:color-mix(in srgb, var(--invert-fg) 5%, transparent);border:1px solid color-mix(in srgb, var(--invert-fg) 20%, transparent);color:var(--invert-fg);font-family:'Space Mono',monospace;font-size:0.78rem;padding:0.6rem;width:100%;outline:none;resize:vertical;" placeholder="Type what you want the voice to say…" maxlength="10000"></textarea>
+    </div>
+    <div class="demo-footer-meta">
+      <span id="charCount">0/10000</span>
+      <span>50 credits / minute of output</span>
+    </div>
+    <button class="demo-generate-btn" onclick="generateSpeech()">Generate Speech</button>
+    <div class="demo-output" id="demoOutput">
+      <div id="demoOutputContent"></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="rev">
+    <div class="section-label">Pricing</div>
+    <h2>Credits<br>Buy Throughput.</h2>
+    <p>Pick a plan that matches your output. Credits buy time — 50 per minute of generated audio, 300 per voice design preview, 500 per clone submission.</p>
+  </div>
+
+  <div class="pricing-cards rev rev-d1">
+    <div class="price-card">
+      <div class="pc-top">
+        <div class="pc-name">Creator</div>
+        <button class="pc-choose">Choose</button>
+      </div>
+      <div style="margin-bottom:0.5rem;">
+        <span class="pc-amount"><sup>$</sup>10</span><span class="pc-period">/month</span>
+      </div>
+      <p class="pc-desc">Best for consistent personal use and small projects.</p>
+      <ul class="pc-features">
+        <li><strong>15,000 credits</strong> per month</li>
+        <li>Queue priority: <strong>Standard</strong></li>
+        <li>Clone, design, generate</li>
+        <li>Exports: WAV + MP3</li>
+      </ul>
+    </div>
+    <div class="price-card featured">
+      <div class="most-picked">Most Picked</div>
+      <div class="pc-top">
+        <div class="pc-name">Pro</div>
+        <button class="pc-choose">Choose</button>
+      </div>
+      <div style="margin-bottom:0.5rem;">
+        <span class="pc-amount"><sup>$</sup>25</span><span class="pc-period">/month</span>
+      </div>
+      <p class="pc-desc">For creators shipping frequently and working in longer scripts.</p>
+      <ul class="pc-features">
+        <li><strong>45,000 credits</strong> per month</li>
+        <li>Queue priority: <strong>Priority</strong></li>
+        <li>Faster turnaround under load</li>
+        <li>Commercial usage</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="credit-rates rev rev-d2">
+    <div class="cr-label">Credit Rates</div>
+    <div class="cr-grid">
+      <div class="cr-card">
+        <div class="cr-card-label">Generate Speech</div>
+        <div class="cr-amount">50</div>
+        <div class="cr-sub">credits / minute<br>Billed by output duration (rounded up).</div>
+      </div>
+      <div class="cr-card">
+        <div class="cr-card-label">Voice Design Preview</div>
+        <div class="cr-amount">300</div>
+        <div class="cr-sub">credits<br>Per preview generation.</div>
+      </div>
+      <div class="cr-card">
+        <div class="cr-card-label">Voice Clone</div>
+        <div class="cr-amount">500</div>
+        <div class="cr-sub">credits<br>Per clone submission.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rev rev-d3">
+    <div class="faq-label">FAQ</div>
+    <div class="faq-grid">
+      <div class="faq-card">
+        <div class="faq-q">When do limits reset?</div>
+        <div class="faq-a">Monthly. Your credit balance resets on renewal.</div>
+      </div>
+      <div class="faq-card">
+        <div class="faq-q">What counts as a minute?</div>
+        <div class="faq-a">Credits are billed by output duration for generation (rounded up). Inputs like clone/design have fixed credit costs.</div>
+      </div>
+      <div class="faq-card">
+        <div class="faq-q">Where do invoices live?</div>
+        <div class="faq-a">Account → Billing. We'll also link to the Stripe portal once billing is enabled.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="rev">
+    <div class="section-label">About Vocra</div>
+    <h2>Built for Audio<br>Creators.</h2>
+    <p>Vocra is a precision voice tool for creators, studios, and developers who need high-fidelity speech synthesis without the overhead of managing models.</p>
+    <p>We're obsessed with audio quality and developer ergonomics. Every feature is built around the principle that generating speech should be as frictionless as typing text.</p>
+    <div style="margin-top:2rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="#demo" class="btn-solid">Get Started</a>
+      <a href="#pricing" class="btn-ghost">View Pricing</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-logo">Vocra</a>
+  <div class="footer-links">
+    <a href="#demo">Demo</a>
+    <a href="#voices">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#about">About</a>
+    <a href="#">Privacy</a>
+    <a href="#">API</a>
+  </div>
+  <div class="footer-copy">© 2025 Vocra. All rights reserved.</div>
+</footer>
+
+<script>
+// ── CURSOR ──
+const cur = document.getElementById('cur'), curR = document.getElementById('curR');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cur.style.left = mx+'px'; cur.style.top = my+'px'; });
+(function animR() { rx += (mx-rx)*0.1; ry += (my-ry)*0.1; curR.style.left = rx+'px'; curR.style.top = ry+'px'; requestAnimationFrame(animR); })();
+document.querySelectorAll('a,button,select,textarea,input').forEach(el => {
+  el.addEventListener('mouseenter', () => document.body.classList.add('cur-grow'));
+  el.addEventListener('mouseleave', () => document.body.classList.remove('cur-grow'));
+});
+
+// ── THEME ──
+const themeBtn = document.getElementById('themeBtn');
+let dark = false;
+themeBtn.addEventListener('click', () => {
+  dark = !dark;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+});
+
+// ── REVEAL ──
+const revEls = document.querySelectorAll('.rev');
+new IntersectionObserver((entries) => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('on'); }), {threshold:0.08}).observe && revEls.forEach(el => new IntersectionObserver((entries) => { if(entries[0].isIntersecting) el.classList.add('on'); }, {threshold:0.08}).observe(el));
+
+// ── WAVEFORMS ──
+function makeWaveform(id) {
+  const svg = document.getElementById(id);
+  if (!svg) return;
+  let d = '';
+  const bars = 60;
+  for (let i = 0; i < bars; i++) {
+    const x = (i / bars) * 300;
+    const h = 4 + Math.random() * 32;
+    const y = (40 - h) / 2;
+    d += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="3" height="${h.toFixed(1)}" rx="1.5" fill="currentColor" opacity="${(0.3 + Math.random()*0.5).toFixed(2)}"/>`;
+  }
+  svg.innerHTML = d;
+}
+['wf-gojo','wf-frieren','wf-eeaao','wf-chungking'].forEach(makeWaveform);
+
+// ── TOGGLE ──
+function setToggle(btn, mode) {
+  const group = btn.closest('.toggle-group');
+  group.querySelectorAll('.tog-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── PLAY (simulated) ──
+let activePlayer = null, activeInterval = null, activeProgress = 0;
+const durations = { gojo: 37, frieren: 29, eeaao: 45, chungking: 52 };
+
+function togglePlay(btn, id) {
+  if (btn.classList.contains('playing')) {
+    stopPlay(btn);
+    return;
+  }
+  if (activePlayer) stopPlay(activePlayer);
+
+  btn.classList.add('playing');
+  btn.textContent = 'Stop';
+  activePlayer = btn;
+  activeProgress = 0;
+  const total = durations[id] || 30;
+  const card = btn.closest('.voice-card');
+  const prog = card.querySelector('.wf-progress');
+  const timeEl = card.querySelector('.vc-time');
+  let elapsed = 0;
+
+  activeInterval = setInterval(() => {
+    elapsed += 0.1;
+    activeProgress = (elapsed / total) * 100;
+    prog.style.width = Math.min(activeProgress, 100) + '%';
+    const secs = Math.floor(elapsed);
+    timeEl.textContent = Math.floor(secs/60) + ':' + String(secs%60).padStart(2,'0');
+    if (elapsed >= total) stopPlay(btn, card, prog, timeEl);
+  }, 100);
+}
+
+function stopPlay(btn, card, prog, timeEl) {
+  clearInterval(activeInterval);
+  btn.classList.remove('playing');
+  btn.textContent = 'Play';
+  activePlayer = null;
+  if (!card) card = btn.closest('.voice-card');
+  if (!prog) prog = card.querySelector('.wf-progress');
+  if (!timeEl) timeEl = card.querySelector('.vc-time');
+  prog.style.width = '0%';
+  timeEl.textContent = '0:00';
+}
+
+function seekWave(el) {
+  const card = el.closest('.voice-card');
+  const playBtn = card.querySelector('.play-btn');
+  if (!playBtn.classList.contains('playing')) return;
+}
+
+function fakeDownload(name) {
+  const a = document.createElement('a');
+  a.href = '#';
+  alert(`Download of "${name}.mp3" would start here with a real account.`);
+}
+
+// ── DEMO GENERATE ──
+const demoText = document.getElementById('demoText');
+demoText.addEventListener('input', () => {
+  document.getElementById('charCount').textContent = demoText.value.length + '/10000';
+});
+
+const responses = {
+  gojo: '▶ Audio generated — 0:03.4 — Voice: Gojo (Japanese)\n\nSharp delivery, light reverb tail. The text was rendered with confident pacing and slight cinematic compression.',
+  frieren: '▶ Audio generated — 0:04.1 — Voice: Frieren (Japanese)\n\nSoft-spoken, distant quality with gentle breathiness. Pauses were naturally extended to match the character tone.',
+  eeaao: '▶ Audio generated — 0:05.7 — Voice: Eeaao (Chinese)\n\nClose-mic intimacy, slight warmth in the mid-range. No reverb added — pure room tone realism.',
+  chungking: '▶ Audio generated — 0:06.2 — Voice: Chungking (Cantonese)\n\nLate-night ambience baked into the tone. The voice model captures the streetlight quality of the original reference.'
+};
+
+function generateSpeech() {
+  const voice = document.getElementById('demoVoice').value;
+  const text = demoText.value.trim();
+  const out = document.getElementById('demoOutput');
+  const content = document.getElementById('demoOutputContent');
+
+  if (!voice) { content.textContent = '⚠ Please select a voice first.'; out.classList.add('show'); return; }
+  if (!text) { content.textContent = '⚠ Please enter some text to synthesize.'; out.classList.add('show'); return; }
+
+  content.textContent = '⟳ Generating…';
+  out.classList.add('show');
+
+  setTimeout(() => {
+    content.textContent = (responses[voice] || '▶ Audio generated successfully.') +
+      `\n\nText: "${text.slice(0,80)}${text.length > 80 ? '…' : ''}"`;
+  }, 1200);
+}
+
+// ── NAV ACTIVE (scroll spy) ──
+const navSections = ['demo','voices','pricing','about'];
+const navLinkMap = { demo: 'demoLink', voices: 'featLink', pricing: 'pricLink', about: 'aboutLink' };
+
+function updateActiveNav() {
+  let active = '';
+  navSections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY + 120 >= el.offsetTop) active = id;
+  });
+  // desktop links
+  Object.entries(navLinkMap).forEach(([id, lId]) => {
+    const el = document.getElementById(lId);
+    if (el) el.classList.toggle('active', id === active);
+  });
+  // mobile links
+  document.querySelectorAll('.mob-link').forEach(a => {
+    const href = a.getAttribute('href').replace('#','');
+    a.classList.toggle('active', href === active);
+  });
+}
+window.addEventListener('scroll', updateActiveNav, { passive: true });
+updateActiveNav();
+
+// ── HAMBURGER ──
+const hamburger = document.getElementById('hamburger');
+const mobileNav = document.getElementById('mobileNav');
+
+hamburger.addEventListener('click', () => {
+  const isOpen = mobileNav.classList.toggle('open');
+  hamburger.classList.toggle('open', isOpen);
+  hamburger.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+});
+
+// close mobile nav when a link is clicked
+mobileNav.querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', () => {
+    mobileNav.classList.remove('open');
+    hamburger.classList.remove('open');
+  });
+});
+
+// close on outside click
+document.addEventListener('click', e => {
+  if (!hamburger.contains(e.target) && !mobileNav.contains(e.target)) {
+    mobileNav.classList.remove('open');
+    hamburger.classList.remove('open');
+  }
+});
+</script>
+</body>
+</html>
