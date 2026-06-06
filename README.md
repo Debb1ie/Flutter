@@ -1,4 +1,4 @@
-# EchoVerse
+# LongUnlimitedReader
 
 **v2.0 — Now with cloud voices**
 
