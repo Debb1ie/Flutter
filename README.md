@@ -6,7 +6,7 @@
 
 Paste unlimited text and listen with natural, lifelike voices. No limits. No uploads. Built for readers, listeners, and builders.
 
-EchoVerse is a modern Voice AI storytelling and podcast web application built for the GitHub Finish-Up-A-Thon. It transforms text into expressive audio using a premium black-and-white interface, emotion-aware controls, multi-character story mode, and project workspace persistence.
+LongUnlimitedReader is a modern Voice AI storytelling and podcast web application built for the GitHub Finish-Up-A-Thon. It transforms text into expressive audio using a premium black-and-white interface, emotion-aware controls, multi-character story mode, and project workspace persistence.
 
 ---
 
