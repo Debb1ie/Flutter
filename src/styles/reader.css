@@ -1,0 +1,361 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap');
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #131313;
+  --surface-2: #1a1a1a;
+  --line: #262626;
+  --text: #f5f5f5;
+  --muted: #8a8a8a;
+  --accent: #f3f3f3;
+  --danger: #ff6b6b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 20% 20%, #1a1a2e 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 80%, #1e1a1a 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 0%, #161625 0%, transparent 50%),
+    var(--bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.reader-shell {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.reader-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.reader-header h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.reader-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+}
+
+.reader-controls {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  width: fit-content;
+}
+
+.control-btn {
+  padding: 0.65rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease, transform 150ms ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.control-btn:hover:not(:disabled) {
+  background: var(--surface-2);
+  border-color: #4a4a4a;
+  transform: translateY(-1px);
+}
+
+.control-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.control-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.control-btn.stop {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.reader-settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  padding: 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.setting-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.reader-label {
+  color: var(--muted);
+  font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.reader-select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+  padding: 0.6rem 0.8rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 160ms ease;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  padding-right: 2.2rem;
+}
+
+.reader-select:focus {
+  border-color: #555;
+}
+
+.reader-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #262626;
+  outline: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.reader-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 2px solid var(--surface);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reader-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 2px solid var(--surface);
+  cursor: pointer;
+}
+
+.reader-panel {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  padding: 1rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.reader-textarea {
+  width: 100%;
+  min-height: clamp(300px, 50vh, 500px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  line-height: 1.7;
+  padding: 0.9rem;
+  resize: vertical;
+  outline: none;
+  transition: border-color 160ms ease;
+  -webkit-appearance: none;
+}
+
+.reader-textarea:focus {
+  border-color: #3a3a3a;
+}
+
+.reader-nav-btn {
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  background: #fff;
+  color: #000;
+  border: 1px solid #262626;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.reader-nav-btn:hover {
+  border-color: #555;
+  background: #f5f5f5;
+}
+
+.reader-meta {
+  display: flex;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+}
+
+/* Tablet responsive */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .reader-shell {
+    max-width: 100%;
+    padding: 1.25rem;
+  }
+
+  .reader-settings {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.1rem;
+    padding: 1.2rem;
+  }
+
+  .reader-textarea {
+    min-height: 400px;
+  }
+}
+
+/* Mobile landscape and small tablets */
+@media (min-width: 568px) and (max-width: 767px) {
+  .reader-shell {
+    padding: 1rem;
+    gap: 0.9rem;
+  }
+
+  .reader-settings {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+
+  .reader-textarea {
+    min-height: 320px;
+  }
+
+  .control-btn {
+    padding: 0.6rem 1rem;
+    min-height: 42px;
+  }
+}
+
+/* Mobile portrait */
+@media (max-width: 567px) {
+  .reader-shell {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .reader-settings {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+    padding: 0.9rem;
+  }
+
+  .reader-textarea {
+    min-height: 280px;
+    font-size: 0.9rem;
+  }
+
+  .reader-controls {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .control-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 0.7rem 0.8rem;
+    min-height: 48px;
+    font-size: 0.85rem;
+  }
+
+  .reader-meta {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .reader-panel {
+    padding: 0.9rem;
+  }
+}
+
+/* iOS Safari safe areas */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .reader-shell {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+
+  @media (max-width: 567px) {
+    .reader-shell {
+      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* Android Chrome */
+@media (max-width: 567px) {
+  input[type="range"] {
+    height: 8px;
+  }
+
+  .reader-select {
+    background-size: 14px 14px;
+    background-position: right 0.7rem center;
+  }
+}
+
+/* Landscape mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .reader-textarea {
+    min-height: 200px;
+  }
+
+  .reader-settings {
+    padding: 0.8rem;
+    gap: 0.6rem;
+  }
+}
